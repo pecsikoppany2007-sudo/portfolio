@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>kettő: weboldalak kis cégeknek</title>
+<meta name="description" content="Ketten készítünk weboldalt éttermeknek, borozóknak, kávézóknak és üzleteknek. Saját terv, saját szöveg, sablon nélkül.">
+<meta name="theme-color" content="#050507">
+<meta name="robots" content="noindex">
+<link rel="preload" href="fonts/unbounded-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/onest-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/style.css?v=7">
+<script>document.documentElement.classList.add('js');try{var q=location.search;if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&q.indexOf('nobuild')<0&&(q.indexOf('build')>=0||!sessionStorage.getItem('k6-built'))){document.documentElement.classList.add('building');history.scrollRestoration='manual'}}catch(e){}</script>
+</head>
+<body>
+
+<a class="skip" href="#munkak">Ugrás a tartalomra</a>
+
+<header class="ui" id="ui">
+  <a class="logo" href="#top" aria-label="kettő, vissza az elejére"><span class="logo__dots" aria-hidden="true"><i></i><i></i></span>kettő</a>
+  <nav class="ui__nav" aria-label="Fő menü">
+    <a href="#munkak"><span class="roll">Munkák</span></a>
+    <a href="#rolunk"><span class="roll">Rólunk</span></a>
+    <a href="#menet"><span class="roll">Menet</span></a>
+    <a href="#arak"><span class="roll">Árak</span></a>
+  </nav>
+  <div class="ui__r">
+    <button type="button" class="snd mono" id="snd" aria-pressed="false"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span class="snd__l">Hang ki</span></button>
+    <a class="pill" href="#kapcsolat"><span class="roll">Ajánlatot kérek</span></a>
+  </div>
+</header>
+
+<div class="ui-b mono" aria-hidden="true">
+  <span>Sopron <b id="clock">00:00</b></span>
+  <span><b id="idx">01</b> / 06 <i id="idxname">Kezdés</i></span>
+</div>
+
+<div class="stage" id="stage" aria-hidden="true">
+  <canvas id="gl"></canvas>
+  <img class="stage__poster" src="img/mezo-poster.webp?v=5" alt="" width="1600" height="1000">
+</div>
+
+<main id="top">
+  <section class="hero" data-s="0" data-name="Kezdés">
+    <h1 class="hero__title" data-lines>Weboldalak kis&nbsp;cégeknek</h1>
+    <p class="hero__lead">Ketten készítünk weboldalt éttermeknek, borozóknak, kávézóknak és üzleteknek. Saját terv, saját szöveg, sablon nélkül.</p>
+    <span class="hero__down" aria-hidden="true"><i></i></span>
+  </section>
+
+  <section class="works" id="munkak" data-s="1" data-name="Munkák">
+    <div class="works__pin">
+      <div class="works__head">
+        <h2 class="h-big" data-lines>Munkáink</h2>
+        <p class="works__note">Az utóbbi hónapok oldalai, mind soproni helyeknek. Van, amelyik már fent van, van, amelyik még bemutató.</p>
+      </div>
+      <div class="cap" id="cap" aria-hidden="true">
+        <span class="cap__n mono"><b id="capn">01</b> / 08</span>
+        <span class="cap__name" id="capname">Darling</span>
+        <span class="cap__k" id="capk">Street food és bár</span>
+      </div>
+      <p class="works__hint" aria-hidden="true">Ahová az egeret viszi, ott az igazi oldal látszik. Kattintson, és belép.</p>
+    </div>
+    <ol class="wl" id="wl">
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-darling.jpg?v=5" alt="A Darling oldalának nyitóképe: a bár bejárata este, felette a „Drágám, később hívlak…” felirat" loading="lazy" width="960" height="600"><span class="wl__i mono">01</span><span class="wl__n">Darling</span><span class="wl__k">Street food és bár</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-avira.jpg?v=5" alt="Az Avira oldalának nyitóképe a pulttal és a kör alakú logóval" loading="lazy" width="960" height="600"><span class="wl__i mono">02</span><span class="wl__n">Avira</span><span class="wl__k">Kávézó és reformer pilates</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-katlan.jpg?v=5" alt="A Katlan oldalának nyitóképe: hús a grillrácson, alatta a KATLAN felirat" loading="lazy" width="960" height="600"><span class="wl__i mono">03</span><span class="wl__n">Katlan</span><span class="wl__k">Grill és borozó</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-cafe-flow.jpg?v=5" alt="A Café Flow oldalának nyitóképe az esti kirakattal és a neonfelirattal" loading="lazy" width="960" height="600"><span class="wl__i mono">04</span><span class="wl__n">Café Flow</span><span class="wl__k">Kávézó a Várkerületen</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-gyogygodor.jpg?v=5" alt="A Gyógygödör oldalának nyitóképe a boltíves pincével" loading="lazy" width="960" height="600"><span class="wl__i mono">05</span><span class="wl__n">Gyógygödör</span><span class="wl__k">Pinceborozó a Fő téren</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-cafe-nana.jpg?v=5" alt="A Café Nana oldalának nyitóképe a cukrászda pultjával" loading="lazy" width="960" height="600"><span class="wl__i mono">06</span><span class="wl__n">Café Nana</span><span class="wl__k">Mentes cukrászda</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-habvero.jpg?v=5" alt="A HabVero oldalának nyitóképe a bolt polcaival" loading="lazy" width="960" height="600"><span class="wl__i mono">07</span><span class="wl__n">HabVero</span><span class="wl__k">Cukrász kellékek</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-moa.jpg?v=5" alt="Az Aramis Moa oldalának nyitóképe: darts tábla, amelynek fele pizza" loading="lazy" width="960" height="600"><span class="wl__i mono">08</span><span class="wl__n">Aramis Moa</span><span class="wl__k">Pizzéria és pub</span></li>
+    </ol>
+  </section>
+
+  <section class="about" id="rolunk" data-s="2" data-name="Rólunk">
+    <p class="about__text" id="stmt">Ketten vagyunk. A tervet, a szöveget és a kódot is mi csináljuk, sablon nélkül. Minden hely más, ezért mindegyiknek saját oldalt készítünk, amin első ránézésre látszik, hogy melyik helyé.</p>
+    <dl class="stats">
+      <div><dt>Nyelv</dt><dd><b>3</b> magyar, német, angol</dd></div>
+      <div><dt>Képernyő</dt><dd><b>320</b> képponttól felfelé mindenre megnézzük</dd></div>
+      <div><dt>Első változat</dt><dd><b>1</b> héten belül, fizetés előtt</dd></div>
+    </dl>
+  </section>
+
+  <section class="proc" id="menet" data-s="3" data-name="Menet">
+    <h2 class="h-big" data-lines>Így dolgozunk</h2>
+    <ol class="proc__list">
+      <li><span class="proc__n mono" aria-hidden="true">01</span><h3>Beszélgetünk</h3><p>Felhívjuk, vagy elmegyünk Önhöz. Megnézzük a helyet, és ha kell, fotózunk is.</p></li>
+      <li><span class="proc__n mono" aria-hidden="true">02</span><h3>Első változat</h3><p>Egy héten belül küldünk egy linket, amit telefonon is megnézhet, mielőtt bármit fizetne.</p></li>
+      <li><span class="proc__n mono" aria-hidden="true">03</span><h3>Javítás</h3><p>Amit kér, átírjuk. Két kör javítás benne van az árban.</p></li>
+      <li><span class="proc__n mono" aria-hidden="true">04</span><h3>Indulás</h3><p>Feltesszük a saját címére, és beállítjuk a Google-térképen is.</p></li>
+    </ol>
+  </section>
+
+  <section class="prices" id="arak" data-s="4" data-name="Árak">
+    <h2 class="h-big" data-lines>Árak</h2>
+    <div class="cols">
+      <div class="col">
+        <h3>Egyoldalas</h3>
+        <p class="col__p"><b>150 000</b> Ft-tól</p>
+        <p>Bemutatkozó oldal egy nyelven: nyitvatartás, étlap vagy árlista, térkép, telefonszám.</p>
+      </div>
+      <div class="col">
+        <h3>Több oldal</h3>
+        <p class="col__p"><b>260 000</b> Ft-tól</p>
+        <p>Több oldal vagy több nyelv, asztal- vagy időpontfoglalással.</p>
+      </div>
+      <div class="col">
+        <h3>Karbantartás</h3>
+        <p class="col__p"><b>8 000</b> Ft / hó</p>
+        <p>Ha változik valami, szól, és még aznap átírjuk.</p>
+      </div>
+    </div>
+    <p class="prices__note">Pontos árat az első beszélgetés után mondunk. A domain és a tárhely díja külön van, ez évente nagyjából 10&nbsp;000&nbsp;Ft.</p>
+  </section>
+
+  <section class="contact" id="kapcsolat" data-s="5" data-name="Kapcsolat">
+    <h2 class="h-contact" data-lines>Kezdjük el</h2>
+    <p class="contact__lead">Írjon egy e-mailt vagy hívjon. Hétköznap általában még aznap válaszolunk.</p>
+    <div class="contact__links">
+      <a class="biglink" href="mailto:hello@pelda.hu"><span class="roll">hello@pelda.hu</span></a>
+      <a class="biglink" href="tel:+36301234567"><span class="roll">+36 30 123 4567</span></a>
+    </div>
+  </section>
+</main>
+
+<footer class="ft" id="ft">
+  <div class="ft__row">
+    <span>© 2026 kettő</span>
+    <span>Ezt az oldalt is mi készítettük. <button type="button" class="ft__again" id="again">Megnézem újra, ahogy épül</button></span>
+    <a href="#top">Vissza a tetejére</a>
+  </div>
+  <details class="ft__legal">
+    <summary>Impresszum és adatkezelés</summary>
+    <p>Üzemeltető: [név, székhely, adószám, e-mail]. Tárhelyszolgáltató: Netlify, Inc., 101 2nd Street, San Francisco, CA 94105, privacy@netlify.com.</p>
+    <p>Az oldal nem használ sütiket, nem mér látogatókat, és nem tölt be külső szolgáltatást. Ha e-mailt ír nekünk, a levelét csak a válaszhoz használjuk.</p>
+  </details>
+</footer>
+
+<div class="case" id="case" hidden role="dialog" aria-modal="true" aria-labelledby="casename">
+  <div class="case__bar">
+    <span class="case__n mono" id="casen">01 / 08</span>
+    <h2 class="case__name" id="casename">Darling</h2>
+    <span class="case__k" id="casek">Street food és bár</span>
+    <button type="button" class="case__x" id="casex"><span class="roll">Bezárás</span></button>
+  </div>
+  <div class="case__scroll" id="casescroll" data-lenis-prevent>
+    <img class="case__img" id="caseimg" alt="" width="1100" height="6000">
+    <button type="button" class="case__next" id="casenext">Következő munka: <b id="casenextn">Avira</b></button>
+  </div>
+  <div class="case__prog" aria-hidden="true"><i id="caseprog"></i></div>
+</div>
+
+<div class="cur" id="cur" aria-hidden="true"></div>
+
+<script type="module" src="js/main.js?v=7"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+const { chromium, devices } = require('playwright');
+const fake = `(()=>{for(const C of [WebGLRenderingContext,WebGL2RenderingContext]){const g=C.prototype.getParameter;C.prototype.getParameter=function(p){if(p===0x9246)return 'ANGLE (Apple, Apple M1, OpenGL 4.1)';return g.call(this,p)}}})()`;
+(async () => {
+  const b = await chromium.launch({ args: ['--enable-unsafe-swiftshader','--use-gl=swiftshader','--ignore-gpu-blocklist'] });
+  const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+  await ctx.addInitScript(fake);
+  const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+  await p.goto('http://127.0.0.1:8200/?3d&nobuild');
+  let i = 0; const shot = async (t, n) => { await p.waitForTimeout(t); await p.screenshot({ path: `/tmp/v7/d${String(i++).padStart(2,'0')}-${n}.jpg`, quality: 60 }); };
+  await p.waitForTimeout(12000);
+  const L = await p.evaluate(() => { const t = s => document.querySelector(s).getBoundingClientRect().top + scrollY; return { w: t('#munkak'), wh: document.querySelector('#munkak').offsetHeight, menet: t('#menet'), mh: document.querySelector('#menet').offsetHeight, kap: t('#kapcsolat'), H: document.documentElement.scrollHeight }; });
+  console.log(L);
+  const go = async (y, t, n) => { await p.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), Math.round(y)); await shot(t, n); };
+  if (process.argv[2] === 'm') { await p.goto('about:blank'); }
+  await go(L.w + (L.wh - 900) * (1.0 / 8), 3500, 'work');
+  await p.mouse.move(720, 450, { steps: 4 }); await p.mouse.click(720, 450); await shot(1500, 'case');
+  const open = await p.evaluate(() => !document.querySelector('#case').hidden);
+  await p.keyboard.press('Escape'); await shot(1500, 'closed');
+  const st = await p.evaluate(() => [...document.querySelectorAll('#menet .proc__list li')].map(li => li.getBoundingClientRect().top + scrollY + li.offsetHeight / 2)); for (let k = 0; k < 4; k++) await go(st[k] - 450, 3200, 'menet' + k);
+  await go(L.H - 900, 3500, 'contact');
+  const m = await p.evaluate(() => { const r = document.querySelector('.contact__links a[href^="mailto"]').getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; });
+  await p.mouse.move(m[0], m[1], { steps: 6 }); await shot(2500, 'env');
+  await p.mouse.move(200, 200, { steps: 6 }); await shot(2500, 'back');
+  console.log('caseOpen', open, 'desk errs', errs.slice(0, 6));
+  const c2 = await b.newContext({ ...devices['iPhone 13'] }); const q = await c2.newPage(); const e2 = []; q.on('pageerror', e => e2.push(e.message));
+  await q.goto('http://127.0.0.1:8200/?nobuild'); await q.waitForTimeout(6000);
+  const pm = await q.evaluate(() => document.querySelector('#menet').getBoundingClientRect().top + scrollY);
+  await q.evaluate(y => scrollTo(0, y), pm + 300); await q.waitForTimeout(3500); await q.screenshot({ path: '/tmp/v7/p-menet.jpg', quality: 60 });
+  await q.evaluate(() => scrollTo(0, 1e6)); await q.waitForTimeout(3500); await q.screenshot({ path: '/tmp/v7/p-contact.jpg', quality: 60 });
+  console.log('phone errs', e2.slice(0, 5)); await b.close();
+})();
