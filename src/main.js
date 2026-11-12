@@ -1,6 +1,8 @@
-// kettő v5 – one field of light dots, re-formed per section. One rAF loop.
+// kettő v8 – one field of light dots, re-formed per section; our works on a reel of screens; the town before the contact. One rAF loop.
 import Lenis from 'lenis';
 import { makeField } from './field.js';
+import { makeReel } from './reel.js';
+import { makeCity } from './city.js';
 import { startBuild } from './build.js';
 import { guestCursor, proximity, selection, flock } from './extras.js';
 import { sound } from './sound.js';
@@ -75,18 +77,21 @@ let lenis = null;
 if (fine && !reduced) lenis = new Lenis({ lerp: .085, wheelMultiplier: .9, smoothWheel: true });
 $$('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
   const id = a.getAttribute('href'); if (id.length < 2 || !lenis) return; const t = $(id); if (!t) return;
-  e.preventDefault(); lenis.scrollTo(id === '#top' ? 0 : t, { offset: 0, duration: 1.8 });
+  e.preventDefault();
+  // the contact sits at the end of its own pinned stretch (the dive into the town)
+  if (id === '#kapcsolat' && pin && city) lenis.scrollTo(L.contact + L.cityLen, { duration: 3.2 });
+  else lenis.scrollTo(id === '#top' ? 0 : t, { offset: 0, duration: 1.8 });
 }));
 
 /* ---------- layout ---------- */
 let vw = innerWidth, vh = innerHeight, pin = false;
 const sections = $$('[data-s]');
 const works = $('#munkak'), about = $('#rolunk'), prices = $('#arak'), contact = $('#kapcsolat');
-let L = { steps: [1, 2, 3, 4], secs: [], w0: 1, wLen: 1, about: 1, pTop: 1, pH: 1, contact: 1 };
+let L = { steps: [1, 2, 3, 4], secs: [], w0: 1, wLen: 1, about: 1, pTop: 1, pH: 1, contact: 1, cityLen: 1 };
 function measure() {
   vw = innerWidth; vh = innerHeight;
   const sy = scrollY, top = el => el.getBoundingClientRect().top + sy;
-  L = { steps: $$('#menet .proc__list li').map(li => top(li) + li.offsetHeight / 2), menet: top($('#menet')), menetH: $('#menet').offsetHeight, secs: sections.map(s => ({ top: top(s), name: s.dataset.name })), w0: Math.max(1, top(works)), wLen: Math.max(1, works.offsetHeight - vh), about: top(about), pTop: top(prices), pH: prices.offsetHeight, contact: top(contact) };
+  L = { steps: $$('#menet .proc__list li').map(li => top(li) + li.offsetHeight / 2), menet: top($('#menet')), menetH: $('#menet').offsetHeight, secs: sections.map(s => ({ top: top(s), name: s.dataset.name })), w0: Math.max(1, top(works)), wLen: Math.max(1, works.offsetHeight - vh), about: top(about), pTop: top(prices), pH: prices.offsetHeight, contact: top(contact), cityLen: Math.max(1, contact.offsetHeight - vh) };
 }
 let lastW = 0;
 function relayout(force) {
@@ -98,12 +103,15 @@ function relayout(force) {
   if (wChanged || force) { splitEls.forEach(splitLines); if (prox) prox.wrap(); }
   else if (prox) prox.measure();
   measure();
-  if (field) field.resize(innerWidth, innerHeight, Math.min(devicePixelRatio || 1, 1.5));
+  const dpr = Math.min(devicePixelRatio || 1, 1.5);
+  if (field) field.resize(innerWidth, innerHeight, dpr);
+  if (reel) reel.resize(innerWidth / innerHeight);
+  if (city) city.resize(innerWidth, innerHeight, dpr);
   fitCam();
 }
 
 /* ---------- the field ---------- */
-let field = null, ready = false;
+let field = null, reel = null, city = null, ready = false;
 const prox = rich ? proximity('.hero__title, .h-big, .h-contact') : null;
 const IMGS = ['darling', 'avira', 'katlan', 'cafe-flow', 'gyogygodor', 'cafe-nana', 'habvero', 'moa'].map(n => `img/munka-${n}.jpg?v=5`);
 const rows = $$('#wl .wl__row').map(r => ({ n: r.querySelector('.wl__n').textContent, k: r.querySelector('.wl__k').textContent }));
@@ -114,12 +122,12 @@ function fitCam() {
   baseZ = Math.max(14, (W / 2 * 1.14) / (Math.tan(c.fov * Math.PI / 360) * a));
 }
 if (has3d) {
-  try { field = makeField($('#gl'), { phone, lens: rich }); } catch (e) { field = null; html.classList.add('no3d'); }
+  try { field = makeField($('#gl'), { phone }); } catch (e) { field = null; html.classList.add('no3d'); }
 }
 
 // how hard the dots burst toward the viewer for each change
 const BURST = { '0-1': 0, '1-2': 10, '9-10': 6, '10-11': 4, '14-15': 5 };
-const burstFor = (a, b) => BURST[a + '-' + b] ?? (a >= 2 && b <= 9 ? 3.4 : 4.5);
+const burstFor = (a, b) => BURST[a + '-' + b] ?? (a >= 2 && b <= 9 ? .8 : 4.5);
 
 /* ---------- pointer ---------- */
 const ptr = { x: 0, y: 0, sx: 0, sy: 0, inside: false, cx: -999, cy: -999, moved: -9e9, ccx: innerWidth / 2 };
@@ -172,16 +180,46 @@ function tweenTo(b) {
   target = b;
 }
 
-/* ---------- caption ---------- */
-const capn = $('#capn'), capname = $('#capname'), capk = $('#capk'), cap = $('#cap');
+/* ---------- the list beside the reel ---------- */
+const rl = $('#rl'), rb = $('#rb'), rbn = $('#rbn');
+rows.forEach((r, i) => {
+  const li = document.createElement('li');
+  li.innerHTML = `<button type="button" tabindex="-1"><b>${String(i + 1).padStart(2, '0')}</b><span class="rl__n"></span><span class="rl__k"></span></button>`;
+  li.querySelector('.rl__n').textContent = r.n; li.querySelector('.rl__k').textContent = r.k;
+  li.firstChild.addEventListener('click', () => { if (lenis) lenis.scrollTo(L.w0 + L.wLen * (i + .3) / 8, { duration: 1.6 }); });
+  rl.appendChild(li);
+});
+const rlRows = $$('li', rl);
+// the name settles letter by letter out of noise
+const GLY = 'abcdeghkmnoprstuvzáéőű';
+let scr = null;
+function scramble(el, text) { scr = { el, text, t: 0 }; }
+function scrTick(dt) {
+  if (!scr) return;
+  scr.t += dt;
+  const n = scr.text.length, done = Math.floor(scr.t / .028);
+  let o = '';
+  for (let i = 0; i < n; i++) o += i < done || scr.text[i] === ' ' ? scr.text[i] : GLY[(Math.random() * GLY.length) | 0];
+  scr.el.textContent = o;
+  if (done >= n) scr = null;
+}
 let capK = -1;
 function setCap(k) {
-  if (k === capK) return; capK = k;
-  cap.classList.remove('on');
+  if (k === capK) return;
+  if (capK >= 0) rlRows[capK].classList.remove('on');
+  if (scr) { scr.el.textContent = scr.text; scr = null; }
+  capK = k;
   if (k < 0) return;
-  void cap.offsetWidth;
-  capn.textContent = String(k + 1).padStart(2, '0'); capname.textContent = rows[k].n; capk.textContent = rows[k].k;
-  cap.classList.add('on');
+  rlRows[k].classList.add('on');
+  rbn.textContent = `${String(k + 1).padStart(2, '0')} / 08`;
+  if (!reduced) scramble(rlRows[k].querySelector('.rl__n'), rows[k].n);
+}
+let rbKey = '', rbOn = false;
+function setFrame(r, on) {
+  if (on !== rbOn) { rbOn = on; rb.classList.toggle('on', on); }
+  if (!r) return;
+  const key = r.map(v => Math.round(v)).join();
+  if (key !== rbKey) { rbKey = key; rb.style.transform = `translate3d(${r[0].toFixed(1)}px,${r[1].toFixed(1)}px,0)`; rb.style.width = (r[2] - r[0]).toFixed(1) + 'px'; rb.style.height = (r[3] - r[1]).toFixed(1) + 'px'; }
 }
 
 /* ---------- index + clock ---------- */
@@ -243,8 +281,7 @@ addEventListener('click', e => {
   if (!field || !pin || caseWant || e.target.closest('a,button,summary,.case')) return;
   const near = Math.abs(sf - Math.round(sf)), k = Math.round(sf) - 2;
   if (k < 0 || k > 7 || near > .03) return;
-  const uv = field.pickLens(ptr.x, ptr.y);
-  if (uv) { lensUV = uv; lensK = k; openCase(k, true); }
+  if (reel && reel.pick(ptr.x, ptr.y, k)) openCase(k, true);
 });
 
 let headS = 0, trI = 0, lastY = 0, whKey = 0;
@@ -277,7 +314,8 @@ function greetTick(dt, now, busy) {
   else if (greet.s === 3) { greet.x += (greet.fx - greet.x) * (1 - Math.exp(-dt / .4)); greet.y += (greet.fy - 200 - greet.y) * (1 - Math.exp(-dt / .4)); if (greet.t > 1.6) greet.s = 4; }
   greeter.at(greet.x, greet.y); greeter.show(greet.s === 3 ? Math.max(0, 1 - greet.t) : Math.min(1, greet.t * 3 + (greet.s > 1 ? 1 : 0)));
 } const lastTr = { x: 9, y: 9 };
-let last = performance.now(), lensA = 0, lensK = 0, lensUV = null;
+let last = performance.now(), tintA = 0, cpLast = -1, clipKey = '', capOn = false;
+const contactIn = $('#contactin'), cityCap = $('#citycap');
 function frame(now) {
   requestAnimationFrame(frame);
   const dt = Math.min(.05, (now - last) / 1000); last = now;
@@ -330,7 +368,7 @@ function frame(now) {
   const near = Math.abs(sf - Math.round(sf));
   const inWorks = pin && introDone && sf > 1.97 && sf < 9.03;
   const k = clamp(Math.round(sf) - 2, 0, 7), settled = inWorks && near < .03;
-  if (pin) setCap(inWorks && near < .3 ? k : -1);
+  if (pin) setCap(inWorks && near < .42 ? k : -1);
 
   // pointer: smoothed; the dots part around it
   ptr.sx = lerp(ptr.sx, ptr.inside ? ptr.x : 0, 1 - Math.exp(-dt / .09));
@@ -339,29 +377,35 @@ function frame(now) {
   if (rich) ms = ptr.inside && introDone ? 1 : 0;
   else { const age = T - tap.t; if (age < 1.3) { ms = Math.sin(clamp(age / 1.3) * Math.PI) * .9; mx = tap.x; my = tap.y; } }
 
-  // lens: the real page shows through under the cursor
-  let lensWant = 0, userOn = false;
-  if (rich && settled && ptr.inside && now - ptr.moved < 2400) { const uv = field.pickLens(ptr.sx, ptr.sy); if (uv) { lensWant = 1; lensUV = uv; userOn = true; } }
-  // when your mouse rests, Domi shows what the lens does
-  const gWant = rich && settled && !userOn && !building ? 1 : 0;
-  domiA += (gWant - domiA) * (1 - Math.exp(-dt / .25));
-  if (domiA > .02) {
-    domiT += dt;
-    const gx = Math.sin(domiT * .5) * .27 + .02, gy = Math.sin(domiT * .83) * .15 + .04;
-    const uv = field.pickLens(gx, gy);
-    if (uv && gWant) { lensWant = 1; lensUV = uv; mx = gx; my = gy; ms = 1; }
-    domi.at((gx + 1) / 2 * vw, (1 - gy) / 2 * vh); domi.show(domiA);
-    if (!domiSaid && domiA > .9) { domiSaid = true; domi.say('alatta az igazi oldal', 2600); }
-  } else if (domiShown) domi.show(0);
-  domiShown = domiA > .02;
-  lensA = lerp(lensA, lensWant, 1 - Math.exp(-dt / .12));
-  if (inWorks) lensK = k;
+  // the reel of our works
+  const reelOn = !!reel && inWorksWide();
+  const rpos = sf < 2 ? -(2 - sf) * 1.9 : sf > 9 ? 7 + (sf - 9) * 1.9 : sf - 2;
   caseA += (caseWant - caseA) * (1 - Math.exp(-dt / .32));
   if (caseWant && caseA > .6) showCase();
   const cg = ease(clamp(caseA));
-  if (caseA > .01) lensK = caseK;
-  field.setLens(lensK, lensUV, Math.max(lensA < .01 ? 0 : lensA, caseA > .01 ? 1 : 0), cg);
-  U.uMS.value = 1 - lensA * .4;
+  let hoverScreen = false;
+  if (reel) {
+    hoverScreen = settled && ptr.inside && !!reel.pick(ptr.sx, ptr.sy, k);
+    reel.update(rpos, dt, T, { on: reelOn, px: ptr.sx, py: ptr.sy, open: cg, hover: hoverScreen });
+    cur.classList.toggle('go', hoverScreen && !caseWant);
+    setFrame(settled && !caseWant ? reel.rect(k, vw, vh) : null, settled && !caseWant);
+    scrTick(dt);
+    // the floor of dots takes the colour of the screen above it
+    const gl = reel.glowOf(k), tw2 = reelOn ? clamp(1 - near * 2.4) * .55 : 0;
+    tintA += (tw2 - tintA) * (1 - Math.exp(-dt / .3));
+    if (gl) U.uTint.value.set(gl.x, gl.y, gl.z, tintA);
+  }
+  // when your mouse rests, Domi points at the screen
+  const gWant = rich && settled && !building && !caseWant && now - ptr.moved > 3500 ? 1 : 0;
+  domiA += (gWant - domiA) * (1 - Math.exp(-dt / .25));
+  if (domiA > .02) {
+    domiT += dt;
+    const gx = Math.sin(domiT * .5) * .22 + .04, gy = Math.sin(domiT * .83) * .13 + .02;
+    domi.at((gx + 1) / 2 * vw, (1 - gy) / 2 * vh); domi.show(domiA);
+    if (!domiSaid && domiA > .9) { domiSaid = true; domi.say('kattintson rá, belül az egész oldal', 3000); }
+  } else if (domiShown) domi.show(0);
+  domiShown = domiA > .02;
+  U.uMS.value = 1;
   // head = the pointer now; the rest = where it was, fading slowly so the dots drift back
   const tr = U.uTr.value;
   headS += (ms - headS) * (1 - Math.exp(-dt / .12));
@@ -379,17 +423,42 @@ function frame(now) {
   const c = field.camera;
   const dive = pin && introDone ? Math.sin(Math.PI * clamp(sf - 1)) : 0;
   const px = rich ? ptr.sx : Math.sin(T * .13) * .4, py = rich ? ptr.sy : Math.cos(T * .11) * .25;
-  c.position.set(px * 1.3 * (1 - cg), py * .75 * (1 - cg), baseZ - dive * 5 - cg * (baseZ - 4.2));
-  c.lookAt(0, 0, -dive * 2);
+  const ox = reel ? reel.cx * cg : 0, oy = reel ? reel.cy * cg : 0;
+  c.position.set(px * 1.3 * (1 - cg) + ox, py * .75 * (1 - cg) + oy, baseZ - dive * 5 - cg * (baseZ - 4.2));
+  c.lookAt(ox, oy, -dive * 2);
   U.uFocus.value = baseZ - dive * 3.5; field.dmat.uniforms.uFocus.value = U.uFocus.value;
   if (!pin) { const mid = y + vh * .5, d = mid < L.w0 ? 1 : mid < L.about ? .16 : mid < L.contact - vh * .3 ? .26 : 1; U.uDim.value = lerp(U.uDim.value, d, 1 - Math.exp(-dt / .3)); }
+
+  // the town: the last stretch before the contact
+  const cp = pin && city ? (y - L.contact) / L.cityLen : 2;
+  const cityOn = cp < .995 && y > L.contact - vh;
+  let clip = '';
+  if (pin && city) {
+    if (cityOn) {
+      city.update(clamp(cp), T, ptr.sx, ptr.sy);
+      if (city.st.vis) { const q = city.quad(vw, vh); clip = 'polygon(' + q.map(p => p[0].toFixed(1) + 'px ' + p[1].toFixed(1) + 'px').join(',') + ')'; }
+      else clip = 'hide';
+      if (cpLast < .57 && cp >= .57) sound.whoosh(1);
+    }
+    const co = cityOn && cp > .1 && cp < .5;
+    if (co !== capOn) { capOn = co; cityCap.classList.toggle('on', co); }
+  }
+  cpLast = cp;
+  if (clip !== clipKey) {
+    clipKey = clip;
+    contactIn.style.visibility = clip === 'hide' ? 'hidden' : '';
+    contactIn.style.clipPath = clip === 'hide' ? '' : clip;
+  }
 
   // the paper price section covers the whole view: nothing to draw
   const pr = L.pTop - y;
   if (pr <= 0 && pr + L.pH >= vh) return;
   if (caseA > .995 && caseWant) return;
-  field.render();
+  if (cityOn) {
+    if (city.st.vis) { field.render(); city.render(false); } else city.render(true);
+  } else field.render();
 }
+function inWorksWide() { return pin && introDone && sf > 1.03 && sf < 9.97; }
 
 const hurry = () => { introFast = true; };
 addEventListener('wheel', hurry, { passive: true, once: true });
@@ -405,7 +474,11 @@ $$('[data-lines], .wl__row, .stats > div, .proc__list li, .col, .about__text, .c
 async function start() {
   if (!field) { html.classList.add('intro-text', 'intro-done'); if (building) { await document.fonts.ready; runBuild(); } return; }
   try { await Promise.race([document.fonts.load('700 100px Unbounded'), new Promise(r => setTimeout(r, 2500))]); } catch (e) {}
-  await field.load(IMGS);
+  const imgs = await field.load(IMGS);
+  if (rich) {
+    try { reel = makeReel(field, imgs); city = makeCity(field.renderer, field.warm); } catch (e) { reel = city = null; }
+    html.classList.toggle('reel', !!reel);
+  }
   relayout(true);
   if (reduced || scrollY > 10) introFast = true;
   ready = true;

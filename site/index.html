@@ -9,7 +9,7 @@
 <meta name="robots" content="noindex">
 <link rel="preload" href="fonts/unbounded-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/onest-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=8">
 <script>document.documentElement.classList.add('js');try{var q=location.search;if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&q.indexOf('nobuild')<0&&(q.indexOf('build')>=0||!sessionStorage.getItem('k6-built'))){document.documentElement.classList.add('building');history.scrollRestoration='manual'}}catch(e){}</script>
 </head>
 <body>
@@ -37,7 +37,7 @@
 
 <div class="stage" id="stage" aria-hidden="true">
   <canvas id="gl"></canvas>
-  <img class="stage__poster" src="img/mezo-poster.webp?v=5" alt="" width="1600" height="1000">
+  <img class="stage__poster" src="img/mezo-poster.webp?v=8" alt="" width="1600" height="1000">
 </div>
 
 <main id="top">
@@ -53,22 +53,21 @@
         <h2 class="h-big" data-lines>Munkáink</h2>
         <p class="works__note">Az utóbbi hónapok oldalai, mind soproni helyeknek. Van, amelyik már fent van, van, amelyik még bemutató.</p>
       </div>
-      <div class="cap" id="cap" aria-hidden="true">
-        <span class="cap__n mono"><b id="capn">01</b> / 08</span>
-        <span class="cap__name" id="capname">Darling</span>
-        <span class="cap__k" id="capk">Street food és bár</span>
+      <div class="rl-w" aria-hidden="true">
+        <ol class="rl" id="rl"></ol>
       </div>
-      <p class="works__hint" aria-hidden="true">Ahová az egeret viszi, ott az igazi oldal látszik. Kattintson, és belép.</p>
+      <div class="rb" id="rb" aria-hidden="true"><i></i><i></i><i></i><i></i><span class="rb__n mono" id="rbn">01 / 08</span></div>
+      <p class="works__hint" aria-hidden="true">Kattintson a képernyőre: belül végiggörgetheti az egész oldalt.</p>
     </div>
     <ol class="wl" id="wl">
-      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-darling.jpg?v=5" alt="A Darling oldalának nyitóképe: a bár bejárata este, felette a „Drágám, később hívlak…” felirat" loading="lazy" width="960" height="600"><span class="wl__i mono">01</span><span class="wl__n">Darling</span><span class="wl__k">Street food és bár</span></li>
-      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-avira.jpg?v=5" alt="Az Avira oldalának nyitóképe a pulttal és a kör alakú logóval" loading="lazy" width="960" height="600"><span class="wl__i mono">02</span><span class="wl__n">Avira</span><span class="wl__k">Kávézó és reformer pilates</span></li>
-      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-katlan.jpg?v=5" alt="A Katlan oldalának nyitóképe: hús a grillrácson, alatta a KATLAN felirat" loading="lazy" width="960" height="600"><span class="wl__i mono">03</span><span class="wl__n">Katlan</span><span class="wl__k">Grill és borozó</span></li>
-      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-cafe-flow.jpg?v=5" alt="A Café Flow oldalának nyitóképe az esti kirakattal és a neonfelirattal" loading="lazy" width="960" height="600"><span class="wl__i mono">04</span><span class="wl__n">Café Flow</span><span class="wl__k">Kávézó a Várkerületen</span></li>
-      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-gyogygodor.jpg?v=5" alt="A Gyógygödör oldalának nyitóképe a boltíves pincével" loading="lazy" width="960" height="600"><span class="wl__i mono">05</span><span class="wl__n">Gyógygödör</span><span class="wl__k">Pinceborozó a Fő téren</span></li>
-      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-cafe-nana.jpg?v=5" alt="A Café Nana oldalának nyitóképe a cukrászda pultjával" loading="lazy" width="960" height="600"><span class="wl__i mono">06</span><span class="wl__n">Café Nana</span><span class="wl__k">Mentes cukrászda</span></li>
-      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-habvero.jpg?v=5" alt="A HabVero oldalának nyitóképe a bolt polcaival" loading="lazy" width="960" height="600"><span class="wl__i mono">07</span><span class="wl__n">HabVero</span><span class="wl__k">Cukrász kellékek</span></li>
-      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-moa.jpg?v=5" alt="Az Aramis Moa oldalának nyitóképe: darts tábla, amelynek fele pizza" loading="lazy" width="960" height="600"><span class="wl__i mono">08</span><span class="wl__n">Aramis Moa</span><span class="wl__k">Pizzéria és pub</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-darling.jpg?v=8" alt="A Darling oldalának nyitóképe: a bár bejárata este, felette a „Drágám, később hívlak…” felirat" loading="lazy" width="960" height="600"><span class="wl__i mono">01</span><span class="wl__n">Darling</span><span class="wl__k">Street food és bár</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-avira.jpg?v=8" alt="Az Avira oldalának nyitóképe a pulttal és a kör alakú logóval" loading="lazy" width="960" height="600"><span class="wl__i mono">02</span><span class="wl__n">Avira</span><span class="wl__k">Kávézó és reformer pilates</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-katlan.jpg?v=8" alt="A Katlan oldalának nyitóképe: hús a grillrácson, alatta a KATLAN felirat" loading="lazy" width="960" height="600"><span class="wl__i mono">03</span><span class="wl__n">Katlan</span><span class="wl__k">Grill és borozó</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-cafe-flow.jpg?v=8" alt="A Café Flow oldalának nyitóképe az esti kirakattal és a neonfelirattal" loading="lazy" width="960" height="600"><span class="wl__i mono">04</span><span class="wl__n">Café Flow</span><span class="wl__k">Kávézó a Várkerületen</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-gyogygodor.jpg?v=8" alt="A Gyógygödör oldalának nyitóképe a boltíves pincével" loading="lazy" width="960" height="600"><span class="wl__i mono">05</span><span class="wl__n">Gyógygödör</span><span class="wl__k">Pinceborozó a Fő téren</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-cafe-nana.jpg?v=8" alt="A Café Nana oldalának nyitóképe a cukrászda pultjával" loading="lazy" width="960" height="600"><span class="wl__i mono">06</span><span class="wl__n">Café Nana</span><span class="wl__k">Mentes cukrászda</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-habvero.jpg?v=8" alt="A HabVero oldalának nyitóképe a bolt polcaival" loading="lazy" width="960" height="600"><span class="wl__i mono">07</span><span class="wl__n">HabVero</span><span class="wl__k">Cukrász kellékek</span></li>
+      <li class="wl__row" tabindex="0" role="button"><img class="wl__img" src="img/munka-moa.jpg?v=8" alt="Az Aramis Moa oldalának nyitóképe: darts tábla, amelynek fele pizza" loading="lazy" width="960" height="600"><span class="wl__i mono">08</span><span class="wl__n">Aramis Moa</span><span class="wl__k">Pizzéria és pub</span></li>
     </ol>
   </section>
 
@@ -114,11 +113,16 @@
   </section>
 
   <section class="contact" id="kapcsolat" data-s="5" data-name="Kapcsolat">
-    <h2 class="h-contact" data-lines>Kezdjük el</h2>
-    <p class="contact__lead">Írjon egy e-mailt vagy hívjon. Hétköznap általában még aznap válaszolunk.</p>
-    <div class="contact__links">
-      <a class="biglink" href="mailto:hello@pelda.hu"><span class="roll">hello@pelda.hu</span></a>
-      <a class="biglink" href="tel:+36301234567"><span class="roll">+36 30 123 4567</span></a>
+    <div class="contact__pin">
+      <p class="city-cap" id="citycap">8 oldal már kész. A&nbsp;9. lehet az Öné.</p>
+      <div class="contact__in" id="contactin">
+        <h2 class="h-contact" data-lines>Kezdjük el</h2>
+        <p class="contact__lead">Írjon egy e-mailt vagy hívjon. Hétköznap általában még aznap válaszolunk.</p>
+        <div class="contact__links">
+          <a class="biglink" href="mailto:hello@pelda.hu"><span class="roll">hello@pelda.hu</span></a>
+          <a class="biglink" href="tel:+36301234567"><span class="roll">+36 30 123 4567</span></a>
+        </div>
+      </div>
     </div>
   </section>
 </main>
@@ -152,6 +156,6 @@
 
 <div class="cur" id="cur" aria-hidden="true"></div>
 
-<script type="module" src="js/main.js?v=7"></script>
+<script type="module" src="js/main.js?v=8"></script>
 </body>
 </html>

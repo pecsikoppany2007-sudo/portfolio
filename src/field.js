@@ -1,11 +1,12 @@
 // kettő v5 – one field of light dots that re-forms per section.
-// States: VOID, WORD, P0..P7 (our works as LED screens), RINGS, SPHERE.
+// States: VOID, WORD, FLOOR (under the reel of works, P0..P7 all point to it), RINGS, I0..I3, SPHERE, ENV.
 import * as THREE from 'three';
 
 const VS = /* glsl */`
 attribute vec4 aA, aB, cA, cB, aR;
 uniform float uP, uT, uMS, uAsp, uScale, uFocus, uAp, uBurst, uDim, uMax, uDrift;
-uniform vec2 uM, uSpin;
+uniform vec2 uM, uSpin, uWave;
+uniform vec4 uTint;
 uniform vec4 uPiv;
 uniform vec4 uTr[16];
 uniform vec3 uHot;
@@ -21,6 +22,7 @@ void main(){
   p.xy += b * uBurst * .3 * (aR.zw - .5);
   vec2 pv = mix(uPiv.xy, uPiv.zw, e);
   p.xz = rot(mix(uSpin.x, uSpin.y, e) * uT) * (p.xz - pv) + pv;
+  p.y += mix(uWave.x, uWave.y, e) * sin(p.x * .32 + uT * .55) * cos(p.z * .27 - uT * .4);
   p += uDrift * vec3(sin(uT * .6 + aR.x * 31.), sin(uT * .5 + aR.y * 27.), sin(uT * .7 + aR.z * 23.));
   vec4 mv = modelViewMatrix * vec4(p, 1.);
   vec4 cp = projectionMatrix * mv;
@@ -46,6 +48,8 @@ void main(){
   float S = min(sz + coc, uMax);
   gl_PointSize = max(S, 1.);
   vec4 c = mix(cA, cB, e);
+  float tn = uTint.a * exp(-dot(p.xz, p.xz) * .011);
+  c.rgb = mix(c.rgb, uTint.rgb, tn); c.a *= 1. + tn * 1.6;
   c.rgb = mix(c.rgb, mix(uHot, vec3(1., .85, .6), aR.x * aR.x), clamp(f * 1.2, 0., 1.) * .95);
   c.a *= clamp(sz * sz / (S * S), .025, 1.) * min(S, 1.) * uDim * (1. + b * .5) * (1. + f * .7);
   c.a *= smoothstep(.8, 3., depth);
@@ -59,19 +63,6 @@ void main(){
   a *= 1. + vSoft * smoothstep(.45, .92, r) * .9;
   if (a * vC.a < .004) discard;
   gl_FragColor = vec4(vC.rgb, vC.a * a);
-}`;
-
-const LVS = /* glsl */`varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`;
-const LFS = /* glsl */`
-uniform sampler2D uMap; uniform vec2 uC; uniform float uR, uA, uK;
-varying vec2 vUv;
-void main(){
-  float d = length((vUv - uC) * vec2(uK, 1.));
-  float a = (1. - smoothstep(uR * .86, uR, d)) * uA;
-  if (a < .003) discard;
-  vec3 t = texture2D(uMap, vUv).rgb;
-  float ring = smoothstep(uR * .9, uR * .965, d) * (1. - smoothstep(uR * .965, uR, d));
-  gl_FragColor = vec4(mix(t, vec3(1., .96, .9), ring * .7), a);
 }`;
 
 const HOT = [1, 0.29, 0.11];
@@ -107,7 +98,7 @@ export function makeField(canvas, o) {
   const U = () => ({
     uP: { value: 0 }, uT: { value: 0 }, uMS: { value: 0 }, uAsp: { value: 1 }, uScale: { value: 500 }, uFocus: { value: 14 },
     uAp: { value: 2.2 }, uBurst: { value: 0 }, uDim: { value: 1 }, uMax: { value: 46 }, uDrift: { value: .014 },
-    uM: { value: new THREE.Vector2(9, 9) }, uTr: { value: Array.from({ length: 16 }, () => new THREE.Vector4(9, 9, 0, 0)) }, uPiv: { value: new THREE.Vector4() }, uSpin: { value: new THREE.Vector2(0, 0) }, uHot: { value: new THREE.Vector3(...HOT) }
+    uM: { value: new THREE.Vector2(9, 9) }, uTr: { value: Array.from({ length: 16 }, () => new THREE.Vector4(9, 9, 0, 0)) }, uPiv: { value: new THREE.Vector4() }, uSpin: { value: new THREE.Vector2(0, 0) }, uWave: { value: new THREE.Vector2(0, 0) }, uTint: { value: new THREE.Vector4(1, 1, 1, 0) }, uHot: { value: new THREE.Vector3(...HOT) }
   });
   const mat = new THREE.ShaderMaterial({ vertexShader: VS, fragmentShader: FS, uniforms: U(), transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending });
   const pts = new THREE.Points(geo, mat); pts.frustumCulled = false; scene.add(pts);
@@ -163,7 +154,7 @@ export function makeField(canvas, o) {
 
   /* ---------- states ---------- */
   const S = {};
-  const blank = () => ({ pos: new Float32Array(N * 4), col: new Float32Array(N * 4), spin: 0, yaw: 0, piv: [0, 0] });
+  const blank = () => ({ pos: new Float32Array(N * 4), col: new Float32Array(N * 4), spin: 0, wave: 0, piv: [0, 0] });
   let wide = true;
 
   function fillDust(st, from) {
@@ -216,30 +207,20 @@ export function makeField(canvas, o) {
     fillDust(st, i);
     return st;
   }
-  // our works as curved LED screens
-  const PW = () => wide ? 11.4 : 7, PH = () => PW() / 1.6, CR = 15;
-  function panelXYZ(u, v, yaw) {
-    const W = PW(), H = PH();
-    const a = (u - .5) * W / CR;
-    const x = Math.sin(a) * CR, z = (1 - Math.cos(a)) * CR; // concave: the edges come toward the viewer
-    const y = (.5 - v) * H + (wide ? .1 : .6);
-    const c = Math.cos(yaw), s = Math.sin(yaw);
-    return [x * c + z * s, y, -x * s + z * c];
-  }
-  function makePanel(img, k) {
-    const st = blank(); st.yaw = (k % 2 ? -1 : 1) * .1;
-    const c = document.createElement('canvas'); c.width = COLS; c.height = ROWS;
-    const x = c.getContext('2d'); x.drawImage(img, 0, 0, COLS, ROWS);
-    const d = x.getImageData(0, 0, COLS, ROWS).data;
-    const sz = PW() / COLS * 1.08;
-    for (let r = 0; r < ROWS; r++) for (let q = 0; q < COLS; q++) {
-      const i = r * COLS + q;
-      const p = panelXYZ((q + .5) / COLS, (r + .5) / ROWS, st.yaw);
-      st.pos.set([...p, sz], i * 4);
-      const j = i * 4, g = 1 / 255;
-      // lift the darkest pixels a touch so the screen reads as a lit surface
-      st.col.set([.03 + Math.pow(d[j] * g, .8), .03 + Math.pow(d[j + 1] * g, .8), .035 + Math.pow(d[j + 2] * g, .8), .9], i * 4);
+  // under the reel of works: a wide floor of dots that rolls like slow water, and some dust in the air
+  function makeFloor() {
+    const st = blank(); st.wave = .22;
+    const NF = Math.floor(N * .86), cols = Math.round(Math.sqrt(NF * 1.7)), rws = Math.floor(NF / cols);
+    let i = 0;
+    for (let r = 0; r < rws; r++) for (let q = 0; q < cols; q++, i++) {
+      const x = (q / (cols - 1) - .5) * 58 + (rnd() - .5) * .05, z = 4 - Math.pow(r / (rws - 1), 1.2) * 52;
+      st.pos.set([x, -4.9, z, .042 + rnd() * .016], i * 4);
+      // brightest under the screen, fading out to the sides and into the distance
+      const fall = Math.exp(-x * x / 520) * (1 - Math.min(1, Math.max(0, (-z - 26) / 22))) * Math.min(1, (4.5 - z) / 5);
+      const hot = rnd() < .01;
+      st.col.set(hot ? [...HOT, .5 * fall] : [...WARM, (.1 + rnd() * .14) * fall], i * 4);
     }
+    fillDust(st, i);
     return st;
   }
   function makeRings() {
@@ -310,23 +291,8 @@ export function makeField(canvas, o) {
     S.VOID = makeVoid(); S.WORD = makeWord(); S.RINGS = makeRings(); S.SPHERE = makeSphere();
     S.I0 = makeShape('phone', (x, y) => y > 290); S.I1 = makeShape('link', (x, y) => x > 205); S.I2 = makeShape('pen', (x, y) => x > 280 && y < 120); S.I3 = makeShape('pin', (x, y) => Math.hypot(x - 200, y - 160) < 60);
     S.ENV = makeShape('env', (x, y) => Math.abs(x - 200) < 172 && Math.abs(y - (110 + 110 * (1 - Math.abs(x - 200) / 175))) < 16);
-    imgs.forEach((im, k) => { S['P' + k] = makePanel(im, k); });
-    for (let k = imgs.length; k < 8; k++) S['P' + k] = S.WORD;
-  }
-
-  /* ---------- lens: the sharp page under the cursor ---------- */
-  const lensGeo = (() => {
-    const g = new THREE.PlaneGeometry(1, 1, 48, 1); const p = g.attributes.position;
-    for (let i = 0; i < p.count; i++) { const u = p.getX(i) + .5, v = .5 - p.getY(i); const q = panelXYZ(u, v, 0); p.setXYZ(i, q[0], q[1], q[2] + .04); }
-    return g;
-  });
-  const lensMat = new THREE.ShaderMaterial({ vertexShader: LVS, fragmentShader: LFS, transparent: true, depthTest: false, depthWrite: false,
-    uniforms: { uMap: { value: null }, uC: { value: new THREE.Vector2(.5, .5) }, uR: { value: .15 }, uA: { value: 0 }, uK: { value: 1.6 } } });
-  let lens = null;
-  const texs = [];
-  function makeLens() {
-    if (lens) { scene.remove(lens); lens.geometry.dispose(); }
-    lens = new THREE.Mesh(lensGeo(), lensMat); lens.renderOrder = 2; lens.visible = !!o.lens; scene.add(lens);
+    S.FLOOR = makeFloor();
+    for (let k = 0; k < 8; k++) S['P' + k] = S.FLOOR;
   }
 
   /* ---------- pair handling ---------- */
@@ -337,7 +303,7 @@ export function makeField(canvas, o) {
     if (!A || !B) return;
     att.aA.array.set(A.pos); att.cA.array.set(A.col); att.aB.array.set(B.pos); att.cB.array.set(B.col);
     for (const k in att) att[k].needsUpdate = true;
-    mat.uniforms.uSpin.value.set(A.spin, B.spin); mat.uniforms.uPiv.value.set(A.piv[0], A.piv[1], B.piv[0], B.piv[1]);
+    mat.uniforms.uSpin.value.set(A.spin, B.spin); mat.uniforms.uWave.value.set(A.wave, B.wave); mat.uniforms.uPiv.value.set(A.piv[0], A.piv[1], B.piv[0], B.piv[1]);
     curA = a; curB = b;
   }
   // freeze the current in-between look (same maths as the shader) and head for state b
@@ -363,7 +329,7 @@ export function makeField(canvas, o) {
     const B = S[order[b]];
     aB.set(B.pos); cB.set(B.col);
     for (const k in att) att[k].needsUpdate = true;
-    mat.uniforms.uSpin.value.set(0, B.spin); mat.uniforms.uPiv.value.set(0, 0, B.piv[0], B.piv[1]);
+    mat.uniforms.uSpin.value.set(0, B.spin); mat.uniforms.uWave.value.set(0, B.wave); mat.uniforms.uPiv.value.set(0, 0, B.piv[0], B.piv[1]);
     mat.uniforms.uP.value = 0;
     curA = -2; curB = b;
   }
@@ -376,38 +342,18 @@ export function makeField(canvas, o) {
     camera.updateProjectionMatrix();
     const scale = h * dpr / (2 * Math.tan(camera.fov * Math.PI / 360));
     for (const m of [mat, dmat]) { m.uniforms.uAsp.value = camera.aspect; m.uniforms.uScale.value = scale; m.uniforms.uAp.value = 1.9 * dpr * h / 900; m.uniforms.uMax.value = 44 * dpr; }
-    if (S.WORD && was !== (camera.aspect > 1)) { build(); makeLens(); const a = curA, b = curB; curA = curB = -9; setPair(Math.max(0, a), Math.max(0, b)); }
+    if (S.WORD && was !== (camera.aspect > 1)) { build(); const a = curA, b = curB; curA = curB = -9; setPair(Math.max(0, a), Math.max(0, b)); }
   }
 
   async function load(srcs) {
     imgs = await Promise.all(srcs.map(src => new Promise(res => { const im = new Image(); im.decoding = 'async'; im.onload = () => res(im); im.onerror = () => res(null); im.src = src; })));
-    imgs = imgs.filter(Boolean);
-    if (o.lens) imgs.forEach(im => { const t = new THREE.Texture(im); t.colorSpace = THREE.NoColorSpace; t.minFilter = THREE.LinearMipmapLinearFilter; t.anisotropy = 4; t.needsUpdate = true; renderer.initTexture(t); texs.push(t); });
-    build(); makeLens();
-  }
-
-  const ray = new THREE.Raycaster(), v2 = new THREE.Vector2();
-  function pickLens(nx, ny) {
-    if (!lens) return null;
-    v2.set(nx, ny); ray.setFromCamera(v2, camera);
-    const h = ray.intersectObject(lens, false)[0];
-    return h ? h.uv : null;
-  }
-  function setLens(k, uv, a, grow = 0) {
-    if (!lens) return;
-    lensMat.uniforms.uA.value = a;
-    if (a <= .001 || !texs[k]) { lens.visible = false; return; }
-    lens.visible = true;
-    lensMat.uniforms.uMap.value = texs[k];
-    if (uv) lensMat.uniforms.uC.value.set(uv.x, uv.y);
-    const yaw = S['P' + k].yaw; lens.rotation.y = yaw;
-    lensMat.uniforms.uR.value = (wide ? .13 : .17) + grow * 1.6;
+    build();
+    return imgs;
   }
 
   return {
-    N, renderer, camera, scene, mat, dmat, order, load, setPair, snapshotTo, resize, pickLens, setLens, setWarp,
+    N, renderer, camera, scene, mat, dmat, order, warm: WARM, load, setPair, snapshotTo, resize, setWarp,
     idx: n => order.indexOf(n),
-    render() { renderer.render(scene, camera); },
-    get lens() { return lens; }
+    render() { renderer.render(scene, camera); }
   };
 }
